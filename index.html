@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>De Onde Vem? – O Impacto Invisível das Suas Escolhas</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.6.0/p5.js"></script>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f0f2f5;
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        /* Barra de Acessibilidade Superior */
+        #barra-acessibilidade {
+            width: 100%;
+            background-color: #333;
+            padding: 10px;
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+
+        #barra-acessibilidade button {
+            padding: 8px 15px;
+            cursor: pointer;
+            border: none;
+            border-radius: 4px;
+            font-weight: bold;
+            font-size: 14px;
+            transition: 0.2s;
+        }
+
+        /* Estilo Botão de Alto Contraste */
+        .btn-contraste { background-color: #ffff00; color: #000; }
+        /* Estilo Botão de Áudio (Acessibilidade Auditiva/Visual) */
+        .btn-audio { background-color: #00a8ff; color: #fff; }
+
+        /* Container do Jogo */
+        #canvas-container {
+            margin-top: 20px;
+            position: relative;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        /* Area de legenda oculta para leitores de tela (Acessibilidade Visual) */
+        .sr-only {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            padding: 0;
+            margin: -1px;
+            overflow: hidden;
+            clip: rect(0, 0, 0, 0);
+            border: 0;
+        }
+
+        /* Modo de Alto Contraste (Fundo Preto / Texto Branco/Amarelo) */
+        body.alto-contraste {
+            background-color: #000000 !important;
+            color: #ffffff !important;
+        }
+        body.alto-contraste #barra-acessibilidade {
+            background-color: #111;
+            border-bottom: 2px solid #fff;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="barra-acessibilidade" role="toolbar" aria-label="Ferramentas de acessibilidade">
+        <button class="btn-contraste" onclick="alternarContraste()" aria-label="Alternar alto contraste (Fundo Preto / Fundo Claro)">
+            🌓 Mudar Fundo (Preto/Claro)
+        </button>
+        <button class="btn-audio" onclick="falarTextoAtual()" aria-label="Ouvir texto da tela atual">
+            🔊 Ouvir Tela (Áudio Descrição)
+        </button>
+    </div>
+
+    <div id="canvas-container"></div>
+
+    <div id="leitor-tela" class="sr-only" aria-live="polite"></div>
+
+    <script>
+        // --- VARIÁVEIS DO JOGO ---
+        let tela = 1; // 1: Inicio, 2: Escolhas, 3: Resultado, 4: Consciência
+        let perguntaAtual = 0;
+        let altoContraste = false;
+
+        // Métricas de Impacto
+        let aguaTotal = 0;
+        let soloTotal = 0;
+        let poluicaoTotal = 0;
+
+        // Dados das Perguntas (Agro, Consumo, Água)
+        const perguntas = [
+            {
+                titulo: "🍔 ALIMENTAÇÃO",
+                descricao: "O que você costuma almoçar na maioria dos dias?",
+                opcoes: [
+                    { texto: "Fast Food / Hambúrguer", agua: 2400, solo: 15, poluicao: 80, desc: "Hambúrguer de fast food. Alto consumo de água e solo pela cadeia da pecuária intensiva." },
+                    { texto: "Comida Caseira (Arroz, feijão, carne)", agua: 1200, solo: 8, poluicao: 40, desc: "Comida caseira tradicional. Impacto moderado equilibrando grãos e proteína." },
+                    { texto: "Prato Saudável / Vegetariano", agua: 400, solo: 3, poluicao: 15, desc: "Prato saudável e vegetal. Baixo impacto, uso eficiente de recursos do solo." }
+                ]
+            },
+            {
+                titulo: "🚿 BANHO",
+                descricao: "Qual é o tempo médio do seu banho diário?",
+                opcoes: [
+                    { texto: "20 minutos ou mais", agua: 240, solo: 0, poluicao: 30, desc: "Banho de 20 minutos. Desperdício direto de água potável tratada." },
+                    { texto: "10 minutos", agua: 120, solo: 0, poluicao: 15, desc: "Banho de 10 minutos. Consumo padrão de água." },
+                    { texto: "5 minutos", agua: 60, solo: 0, poluicao: 5, desc: "Banho eficiente de 5 minutos. Consumo consciente de água." }
+                ]
+            },
+            {
+                titulo: "👕 CONSUMO / ROUPA",
+                descricao: "Com que frequência você compra roupas novas?",
+                opcoes: [
+                    { texto: "Compro sempre (Fast Fashion)", agua: 2700, solo: 12, poluicao: 70, desc: "Fast fashion frequente. A produção de algodão em massa exige muita água e defensivos agrícolas." },
+                    { texto: "Compro às vezes", agua: 1350, solo: 6, poluicao: 35, desc: "Consumo moderado de roupas." },
+                    { texto: "Só quando realmente preciso", agua: 500, solo: 2, poluicao: 10, desc: "Consumo sustentável e durável. Reduz a pressão sobre as lavouras de algodão." }
+                ]
+            }
+        ];
+
+        // --- CONFIGURAÇÃO INICIAL DO P5.JS ---
+        function setup() {
+            let canvas = createCanvas(800, 500);
+            canvas.parent('canvas-container');
+            textAlign(CENTER, CENTER);
+            atualizarLeitorDeTela("Tela Inicial. Título: De Onde Vem? O Impacto Invisível das Suas Escolhas. Pressione a barra de espaço ou clique para começar.");
+        }
+
+        // --- LOOP DE DESENHO DO P5.JS ---
+        function draw() {
+            // Definição das cores de fundo baseadas no modo de acessibilidade ou na lógica do jogo
+            if (altoContraste) {
+                background(0); // Força fundo preto absoluto
+                stroke(255);
+                fill(255);
+            } else {
+                strokeWeight(1);
+                // Na tela 3, o fundo reage ao impacto do usuário
+                if (tela === 3) {
+                    if (poluicaoTotal > 130) background(150, 150, 150); // Cinza / Poluído
+                    else if (poluicaoTotal > 70) background(230, 215, 150); // Amarelado / Alerta
+                    else background(180, 220, 180); // Verde / Equilibrado
+                } else {
+                    background(255); // Fundo branco padrão
+                }
+            }
+
+            // --- GERENCIADOR DE TELAS ---
+            if (tela === 1) {
+                desenharTela1();
+            } else if (tela === 2) {
+                desenharTela2();
+            } else if (tela === 3) {
+                desenharTela3();
+            } else if (tela === 4) {
+                desenharTela4();
+            }
+        }
+
+        // --- TELAS DO SISTEMA ---
+
+        function desenharTela1() {
+            fill(altoContraste ? 255 : 40);
+            textSize(32);
+            text("De Onde Vem?", width / 2, 120);
+            textSize(20);
+            text("O Impacto Invisível das Suas Escolhas", width / 2, 170);
+            
+            textSize(16);
+            text("Você acha que suas escolhas urbanas não impactam o campo?", width / 2, 260);
+            
+            // Botão Começar simulado no Canvas
+            fill(altoContraste ? 255 : 46, altoContraste ? 0 : 204, altoContraste ? 0 : 113);
+            if(altoContraste) stroke(255);
+            rect(width / 2 - 100, 330, 200, 50, 5);
+            fill(altoContraste ? 0 : 255);
+            noStroke();
+            textSize(18);
+            text("CLIQUE PARA INICIAR", width / 2, 355);
+        }
+
+        function desenharTela2() {
+            let q = perguntas[perguntaAtual];
+            
+            // Título da Categoria
+            fill(altoContraste ? 255 : 39, altoContraste ? 255 : 174, altoContraste ? 0 : 96);
+            textSize(24);
+            text(q.titulo, width / 2, 60);
+            
+            // Pergunta
+            fill(altoContraste ? 255 : 50);
+            textSize(18);
+            text(q.descricao, width / 2, 110);
+
+            // Desenhar as 3 opções de botões
+            for (let i = 0; i < q.opcoes.length; i++) {
+                let yPos = 180 + (i * 80);
+                
+                // Mudar cor ao passar o mouse por cima
+                if (mouseX > width/2 - 250 && mouseX < width/2 + 250 && mouseY > yPos && mouseY < yPos + 50) {
+                    fill(altoContraste ? 255 : 220);
+                } else {
+                    fill(altoContraste ? 0 : 245);
+                }
+                
+                stroke(altoContraste ? 255 : 180);
+                strokeWeight(2);
+                rect(width / 2 - 250, yPos, 500, 50, 5);
+                
+                noStroke();
+                fill(altoContraste ? 255 : 0);
+                textSize(16);
+                text(q.opcoes[i].texto, width / 2, yPos + 25);
+            }
+        }
+
+        function desenharTela3() {
+            fill(altoContraste ? 255 : 20);
+            textSize(28);
+            text("O SEU IMPACTO INVISÍVEL", width / 2, 60);
+
+            textSize(18);
+            // Mensagem de impacto no agro com base nos resultados
+            text(`💧 Água Virtual Consumida: ${aguaTotal} Litros`, width / 2, 140);
+            text(`🌾 Área de Solo Pressionada: ${soloTotal} m²`, width / 2, 180);
+            
+            textSize(16);
+            let equivalenteDias = Math.round(aguaTotal / 150); // 150L é a média de uso diário de uma pessoa
+            text(`[Equivale a aproximadamente ${equivalenteDias} dias de água de uma pessoa]`, width / 2, 220);
+
+            // Frase de Efeito Crítico (Clique Mental)
+            stroke(altoContraste ? 255 : 0);
+            fill(altoContraste ? 0 : 255, altoContraste ? 0 : 240, altoContraste ? 0 : 240);
+            rect(50, 270, 700, 90, 8);
+            
+            noStroke();
+            fill(altoContraste ? 255 : 192, altoContraste ? 0 : 57, altoContraste ? 0 : 43);
+            textSize(18);
+            text("“Você não vive no campo... mas suas escolhas controlam o campo.”", width / 2, 315);
+
+            // Botão Avançar
+            fill(altoContraste ? 255 : 41, altoContraste ? 0 : 128, altoContraste ? 0 : 185);
+            rect(width / 2 - 100, 400, 200, 45, 5);
+            fill(altoContraste ? 0 : 255);
+            text("Como mudar isso?", width / 2, 422);
+        }
+
+        function desenharTela4() {
+            fill(altoContraste ? 255 : 40);
+            textSize(26);
+            text("Caminhos para o Consumo Consciente", width / 2, 50);
+
+            textSize(16);
+            let dicas = [
+                "• Reduza o tempo de banho em 2 minutos (Economiza até 24L).",
+                "• Evite o desperdício de alimentos (A pecuária e a agricultura usam muita água).",
+                "• Apoie produtores locais e agroecológicos sempre que possível.",
+                "• Compre roupas por necessidade e dê preferência a marcas duráveis."
+            ];
+
+            for(let i=0; i<dicas.length; i++){
+                text(dicas[i], width / 2, 120 + (i * 45));
+            }
+
+            // Frase de encerramento do Projeto para os Jurados
+            textSize(15);
+            fill(altoContraste ? 255 : 100);
+            text("A proposta evidencia a conexão invisível entre consumo urbano e produção agropecuária.", width/2, 330);
+
+            // Botão Reiniciar
+            stroke(altoContraste ? 255 : 0);
+            fill(altoContraste ? 255 : 39, altoContraste ? 0 : 174, altoContraste ? 0 : 96);
+            rect(width / 2 - 110, 400, 220, 50, 5);
+            noStroke();
+            fill(altoContraste ? 0 : 255);
+            textSize(16);
+            text("Refazer Escolhas 🔄", width / 2, 425);
+        }
+
+        // --- INTERAÇÃO DO MOUSE (CLIQUES) ---
+        function mousePressed() {
+            // Lógica de cliques para avançar telas
+            if (tela === 1) {
+                // Clique no botão começar
+                if (mouseX > width / 2 - 100 && mouseX < width / 2 + 100 && mouseY > 330 && mouseY < 380) {
+                    avancarParaEscolhas();
+                }
+            } 
+            else if (tela === 2) {
+                // Verificar qual opção foi clicada nas perguntas
+                for (let i = 0; i < 3; i++) {
+                    let yPos = 180 + (i * 80);
+                    if (mouseX > width/2 - 250 && mouseX < width/2 + 250 && mouseY > yPos && mouseY < yPos + 50) {
+                        computarEscolha(i);
+                    }
+                }
+            } 
+            else if (tela === 3) {
+                // Avançar da tela de resultados para a de dicas
+                if (mouseX > width / 2 - 100 && mouseX < width / 2 + 100 && mouseY > 400 && mouseY < 445) {
+                    tela = 4;
+                    atualizarLeitorDeTela("Tela 4: Consciência e Ação. Apresentando dicas práticas de consumo e encerramento. Botão no rodapé para refazer escolhas.");
+                }
+            } 
+            else if (tela === 4) {
+                // Reiniciar o jogo
+                if (mouseX > width / 2 - 110 && mouseX < width / 2 + 110 && mouseY > 400 && mouseY < 450) {
+                    reiniciarJogo();
+                }
+            }
+        }
+
+        // --- LÓGICA DO NEGÓCIO ---
+        function avancarParaEscolhas() {
+            tela = 2;
+            perguntaAtual = 0;
+            aguaTotal = 0;
+            soloTotal = 0;
+            poluicaoTotal = 0;
+            anunciarPergunta();
+        }
+
+        function computarEscolha(indiceOpcao) {
+            let dadosOpcao = perguntas[perguntaAtual].opcoes[indiceOpcao];
+            aguaTotal += dadosOpcao.agua;
+            soloTotal += dadosOpcao.solo;
+            poluicaoTotal += dadosOpcao.poluicao;
+
+            // Avança para próxima pergunta ou vai para o resultado
+            perguntaAtual++;
+            if (perguntaAtual < perguntas.length) {
+                anunciarPergunta();
+            } else {
+                tela = 3;
+                atualizarLeitorDeTela(`Tela de Resultados. Seu consumo total de água virtual foi de ${aguaTotal} litros. Uso de solo de ${soloTotal} metros quadrados. Pressione o botão na parte inferior para ver dicas de ação.`);
+            }
+        }
+
+        function reiniciarJogo() {
+            tela = 1;
+            atualizarLeitorDeTela("Jogo reiniciado. Tela Inicial ativa.");
+        }
+
+        // --- ACESSIBILIDADE ---
+
+        // Função 1: Alternar Fundo Claro / Fundo Preto (Alto Contraste)
+        function alternarContraste() {
+            altoContraste = !altoContraste;
+            if (altoContraste) {
+                document.body.classList.add('alto-contraste');
+            } else {
+                document.body.classList.remove('alto-contraste');
+            }
+        }
+
+        // Função 2: Atualização invisível para Leitores de Tela (Deficientes Visuais)
+        function atualizarLeitorDeTela(texto) {
+            document.getElementById('leitor-tela').innerText = texto;
+        }
+
+        function anunciarPergunta() {
+            let q = perguntas[perguntaAtual];
+            atualizarLeitorDeTela(`Pergunta sobre ${q.titulo}: ${q.descricao}. Opção 1: ${q.opcoes[0].texto}. Opção 2: ${q.opcoes[1].texto}. Opção 3: ${q.opcoes[2].texto}.`);
+        }
+
+        // Função 3: Síntese de Voz Nativa (Acessibilidade Auditiva/Visual ativa)
+        function falarTextoAtual() {
+            let textoParaFalar = "";
+
+            if (tela === 1) {
+                textoParaFalar = "De onde vem? O impacto invisível das suas escolhas. Você acha que suas escolhas não impactam o meio ambiente? Clique no centro da tela para iniciar.";
+            } else if (tela === 2) {
+                let q = perguntas[perguntaAtual];
+                textoParaFalar = `${q.titulo}. ${q.descricao}. Opções disponíveis: 1: ${q.opcoes[0].texto}. 2: ${q.opcoes[1].texto}. 3: ${q.opcoes[2].texto}.`;
+            } else if (tela === 3) {
+                textoParaFalar = `Resultados do seu impacto. Você consumiu aproximadamente ${aguaTotal} litros de água virtual e utilizou ${soloTotal} metros quadrados de solo. Lembre-se: Você não vive no campo, mas suas escolhas controlam o campo.`;
+            } else if (tela === 4) {
+                textoParaFalar = "Caminhos para o Consumo Consciente. Reduza o banho, evite o desperdício de comida e apoie o produtor local. Pequenas escolhas, grandes impactos.";
+            }
+
+            // Executa a voz do navegador
+            if ('speechSynthesis' in window) {
+                window.speechSynthesis.cancel(); // Para qualquer fala anterior
+                let utterance = new SpeechSynthesisUtterance(textoParaFalar);
+                utterance.lang = 'pt-BR';
+                window.speechSynthesis.speak(utterance);
+            } else {
+                alert("A síntese de voz não é suportada no seu navegador.");
+            }
+        }
+    </script>
+</body>
+</html>
