@@ -1,407 +1,575 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>De Onde Vem? – O Impacto Invisível das Suas Escolhas</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.6.0/p5.js"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>De Onde Vem? - Impacto Invisível do Consumo</title>
+    <!-- Fontes e estilos base -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
-        body {
+        * {
             margin: 0;
             padding: 0;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #f0f2f5;
-            transition: background-color 0.3s, color 0.3s;
+            box-sizing: border-box;
         }
 
-        /* Barra de Acessibilidade Superior */
-        #barra-acessibilidade {
-            width: 100%;
-            background-color: #333;
-            padding: 10px;
+        body {
+            font-family: 'Inter', sans-serif;
+            transition: background-color 0.3s ease, color 0.3s ease;
+            min-height: 100vh;
             display: flex;
             justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        /* Modo claro (padrão) */
+        body.light-mode {
+            background-color: #f5f7fa;
+            color: #1a2a3a;
+        }
+
+        /* Modo escuro */
+        body.dark-mode {
+            background-color: #1a1a2e;
+            color: #e0e0e0;
+        }
+
+        /* Container principal */
+        .game-container {
+            max-width: 900px;
+            width: 100%;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 32px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+            transition: background 0.3s ease;
+        }
+
+        body.dark-mode .game-container {
+            background: rgba(30, 30, 50, 0.95);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+        }
+
+        /* Barra de acessibilidade */
+        .accessibility-bar {
+            background: #2c5f2d;
+            padding: 12px 20px;
+            display: flex;
             gap: 15px;
+            flex-wrap: wrap;
+            justify-content: flex-end;
+            align-items: center;
+            border-bottom: 2px solid #ffd166;
+        }
+
+        .access-btn {
+            background: #ffd166;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 40px;
+            font-weight: 600;
+            cursor: pointer;
+            font-size: 14px;
+            transition: transform 0.2s;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .access-btn:hover {
+            transform: scale(1.05);
+            background: #ffc107;
+        }
+
+        /* Botão Libras - indicativo */
+        .libra-indicator {
+            background: #004e92;
+            color: white;
+        }
+
+        /* Canvas p5 vai aqui */
+        .canvas-wrapper {
+            display: flex;
+            justify-content: center;
+            background: #eef2e6;
+            transition: background 0.3s;
+        }
+
+        body.dark-mode .canvas-wrapper {
+            background: #2d2d44;
+        }
+
+        canvas {
+            display: block;
+            width: 100%;
+            height: auto;
+            max-width: 800px;
+            border-radius: 0 0 20px 20px;
+            cursor: pointer;
+        }
+
+        /* Painel de texto interativo */
+        .info-panel {
+            padding: 25px 30px;
+            text-align: center;
+        }
+
+        h1, h2 {
+            margin-bottom: 15px;
+            font-weight: 700;
+        }
+
+        .question-text {
+            font-size: 1.5rem;
+            margin: 20px 0;
+            font-weight: 600;
+        }
+
+        .buttons-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            justify-content: center;
+            margin: 20px 0;
+        }
+
+        .choice-btn {
+            background: #2c5f2d;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 60px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .choice-btn:hover {
+            background: #1f4520;
+            transform: translateY(-3px);
+        }
+
+        body.dark-mode .choice-btn {
+            background: #4a7c4b;
+        }
+
+        .reset-btn {
+            background: #e67e22;
+            margin-top: 10px;
+        }
+
+        .reset-btn:hover {
+            background: #d35400;
+        }
+
+        .action-suggest {
+            background: #ffe5b4;
+            padding: 15px;
+            border-radius: 20px;
+            margin-top: 20px;
+            text-align: left;
+        }
+
+        body.dark-mode .action-suggest {
+            background: #3a2a1f;
+            color: #ffde9c;
+        }
+
+        .impact-stats {
+            font-size: 1.1rem;
+            background: #e9f5e9;
+            padding: 15px;
+            border-radius: 20px;
+            margin: 15px 0;
+        }
+
+        body.dark-mode .impact-stats {
+            background: #2e3b2c;
+        }
+
+        button {
             box-shadow: 0 2px 5px rgba(0,0,0,0.2);
         }
 
-        #barra-acessibilidade button {
-            padding: 8px 15px;
-            cursor: pointer;
-            border: none;
-            border-radius: 4px;
-            font-weight: bold;
-            font-size: 14px;
-            transition: 0.2s;
+        /* Alto contraste via classe adicional */
+        .high-contrast {
+            filter: contrast(1.8);
         }
 
-        /* Estilo Botão de Alto Contraste */
-        .btn-contraste { background-color: #ffff00; color: #000; }
-        /* Estilo Botão de Áudio (Acessibilidade Auditiva/Visual) */
-        .btn-audio { background-color: #00a8ff; color: #fff; }
-
-        /* Container do Jogo */
-        #canvas-container {
-            margin-top: 20px;
-            position: relative;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.15);
-            border-radius: 8px;
-            overflow: hidden;
-        }
-
-        /* Area de legenda oculta para leitores de tela (Acessibilidade Visual) */
-        .sr-only {
-            position: absolute;
-            width: 1px;
-            height: 1px;
-            padding: 0;
-            margin: -1px;
-            overflow: hidden;
-            clip: rect(0, 0, 0, 0);
-            border: 0;
-        }
-
-        /* Modo de Alto Contraste (Fundo Preto / Texto Branco/Amarelo) */
-        body.alto-contraste {
-            background-color: #000000 !important;
-            color: #ffffff !important;
-        }
-        body.alto-contraste #barra-acessibilidade {
-            background-color: #111;
-            border-bottom: 2px solid #fff;
+        @media (max-width: 600px) {
+            .choice-btn {
+                padding: 10px 18px;
+                font-size: 0.9rem;
+            }
+            .question-text {
+                font-size: 1.2rem;
+            }
         }
     </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.0/p5.min.js"></script>
 </head>
-<body>
-
-    <div id="barra-acessibilidade" role="toolbar" aria-label="Ferramentas de acessibilidade">
-        <button class="btn-contraste" onclick="alternarContraste()" aria-label="Alternar alto contraste (Fundo Preto / Fundo Claro)">
-            🌓 Mudar Fundo (Preto/Claro)
-        </button>
-        <button class="btn-audio" onclick="falarTextoAtual()" aria-label="Ouvir texto da tela atual">
-            🔊 Ouvir Tela (Áudio Descrição)
-        </button>
+<body class="light-mode">
+<div class="game-container">
+    <!-- Barra de acessibilidade -->
+    <div class="accessibility-bar">
+        <button class="access-btn" id="darkModeBtn">🌙 Modo Escuro</button>
+        <button class="access-btn" id="lightModeBtn">☀️ Modo Claro</button>
+        <button class="access-btn" id="highContrastBtn">🔆 Alto Contraste</button>
+        <button class="access-btn libra-indicator" id="libraBtn">🤟 LIBRAS (Dica Visual)</button>
     </div>
 
-    <div id="canvas-container"></div>
+    <div class="canvas-wrapper">
+        <div id="p5canvas"></div>
+    </div>
 
-    <div id="leitor-tela" class="sr-only" aria-live="polite"></div>
+    <div class="info-panel" id="infoPanel">
+        <!-- conteúdo dinâmico via JS -->
+        <h1 id="mainTitle">🌱 DE ONDE VEM?</h1>
+        <div id="dynamicContent">
+            <p style="font-size: 1.2rem;">🌍 O Impacto Invisível das Suas Escolhas</p>
+            <button class="choice-btn" id="startBtn">✨ Começar Jornada ✨</button>
+            <div class="impact-stats" style="margin-top: 20px;">
+                💡 <strong>Você acha que suas escolhas não impactam o meio ambiente?</strong><br>
+                Cada produto, banho, roupa e alimento tem origem no agro e na natureza.
+            </div>
+        </div>
+    </div>
+</div>
 
-    <script>
-        // --- VARIÁVEIS DO JOGO ---
-        let tela = 1; // 1: Inicio, 2: Escolhas, 3: Resultado, 4: Consciência
-        let perguntaAtual = 0;
-        let altoContraste = false;
-
-        // Métricas de Impacto
-        let aguaTotal = 0;
-        let soloTotal = 0;
-        let poluicaoTotal = 0;
-
-        // Dados das Perguntas (Agro, Consumo, Água)
-        const perguntas = [
-            {
-                titulo: "🍔 ALIMENTAÇÃO",
-                descricao: "O que você costuma almoçar na maioria dos dias?",
-                opcoes: [
-                    { texto: "Fast Food / Hambúrguer", agua: 2400, solo: 15, poluicao: 80, desc: "Hambúrguer de fast food. Alto consumo de água e solo pela cadeia da pecuária intensiva." },
-                    { texto: "Comida Caseira (Arroz, feijão, carne)", agua: 1200, solo: 8, poluicao: 40, desc: "Comida caseira tradicional. Impacto moderado equilibrando grãos e proteína." },
-                    { texto: "Prato Saudável / Vegetariano", agua: 400, solo: 3, poluicao: 15, desc: "Prato saudável e vegetal. Baixo impacto, uso eficiente de recursos do solo." }
-                ]
-            },
-            {
-                titulo: "🚿 BANHO",
-                descricao: "Qual é o tempo médio do seu banho diário?",
-                opcoes: [
-                    { texto: "20 minutos ou mais", agua: 240, solo: 0, poluicao: 30, desc: "Banho de 20 minutos. Desperdício direto de água potável tratada." },
-                    { texto: "10 minutos", agua: 120, solo: 0, poluicao: 15, desc: "Banho de 10 minutos. Consumo padrão de água." },
-                    { texto: "5 minutos", agua: 60, solo: 0, poluicao: 5, desc: "Banho eficiente de 5 minutos. Consumo consciente de água." }
-                ]
-            },
-            {
-                titulo: "👕 CONSUMO / ROUPA",
-                descricao: "Com que frequência você compra roupas novas?",
-                opcoes: [
-                    { texto: "Compro sempre (Fast Fashion)", agua: 2700, solo: 12, poluicao: 70, desc: "Fast fashion frequente. A produção de algodão em massa exige muita água e defensivos agrícolas." },
-                    { texto: "Compro às vezes", agua: 1350, solo: 6, poluicao: 35, desc: "Consumo moderado de roupas." },
-                    { texto: "Só quando realmente preciso", agua: 500, solo: 2, poluicao: 10, desc: "Consumo sustentável e durável. Reduz a pressão sobre as lavouras de algodão." }
-                ]
-            }
-        ];
-
-        // --- CONFIGURAÇÃO INICIAL DO P5.JS ---
-        function setup() {
-            let canvas = createCanvas(800, 500);
-            canvas.parent('canvas-container');
-            textAlign(CENTER, CENTER);
-            atualizarLeitorDeTela("Tela Inicial. Título: De Onde Vem? O Impacto Invisível das Suas Escolhas. Pressione a barra de espaço ou clique para começar.");
+<script>
+    // ======================== ESTADOS DO JOGO ========================
+    let gameState = "start"; // start, question, result, finalAction
+    let currentQuestionIndex = 0;
+    let userChoices = {
+        water: 0,      // litros acumulados
+        land: 0,       // uso do solo (score)
+        pollution: 0   // impacto geral
+    };
+    
+    // Definição das perguntas e opções
+    const questions = [
+        {
+            text: "🍔 ALIMENTAÇÃO: O que você mais consome?",
+            options: [
+                { label: "Fast food (hambúrguer industrial)", water: 1500, land: 8, pollution: 7, desc: "🥩 +1500L água | alto uso de solo para pastagem" },
+                { label: "Comida caseira com carne", water: 800, land: 4, pollution: 4, desc: "🍲 moderado | 800L água" },
+                { label: "Refeição vegetariana / local", water: 200, land: 1, pollution: 1, desc: "🌱 baixo impacto | 200L água" }
+            ]
+        },
+        {
+            text: "🚿 TEMPO DE BANHO MÉDIO:",
+            options: [
+                { label: "Até 5 min (rápido)", water: 60, land: 0, pollution: 1, desc: "💧 60L | bom para o agro" },
+                { label: "10 min", water: 120, land: 0, pollution: 2, desc: "💧 120L | consumo médio" },
+                { label: "20 min ou mais", water: 240, land: 0, pollution: 4, desc: "💧 240L | desperdício crítico" }
+            ]
+        },
+        {
+            text: "👕 CONSUMO DE ROUPA (fast fashion):",
+            options: [
+                { label: "Compro roupas toda semana", water: 2700, land: 3, pollution: 8, desc: "👗 algodão intensivo + água" },
+                { label: "Compro às vezes (moderado)", water: 900, land: 1, pollution: 3, desc: "✅ consumo consciente" },
+                { label: "Só quando preciso (durável)", water: 300, land: 0.5, pollution: 1, desc: "🌟 sustentável" }
+            ]
+        },
+        {
+            text: "📱 CONSUMO DIGITAL (streaming / nuvem):",
+            options: [
+                { label: "Alto uso (horas de vídeo, jogos)", water: 100, land: 0, pollution: 3, desc: "⚡ data centers consomem água" },
+                { label: "Uso moderado", water: 40, land: 0, pollution: 1, desc: "📶 impacto reduzido" },
+                { label: "Uso essencial apenas", water: 15, land: 0, pollution: 0.5, desc: "🌿 bom para o clima" }
+            ]
+        },
+        {
+            text: "🛒 COMPRAS (origem dos produtos):",
+            options: [
+                { label: "Industrializado / importado", water: 600, land: 2, pollution: 5, desc: "✈️ pegada alta" },
+                { label: "Misto (algum local)", water: 250, land: 0.8, pollution: 2, desc: "🚚 intermediário" },
+                { label: "Produtos locais e orgânicos", water: 80, land: 0.2, pollution: 0.5, desc: "🌾 fortalece agro familiar" }
+            ]
         }
+    ];
 
-        // --- LOOP DE DESENHO DO P5.JS ---
-        function draw() {
-            // Definição das cores de fundo baseadas no modo de acessibilidade ou na lógica do jogo
-            if (altoContraste) {
-                background(0); // Força fundo preto absoluto
-                stroke(255);
-                fill(255);
-            } else {
-                strokeWeight(1);
-                // Na tela 3, o fundo reage ao impacto do usuário
-                if (tela === 3) {
-                    if (poluicaoTotal > 130) background(150, 150, 150); // Cinza / Poluído
-                    else if (poluicaoTotal > 70) background(230, 215, 150); // Amarelado / Alerta
-                    else background(180, 220, 180); // Verde / Equilibrado
-                } else {
-                    background(255); // Fundo branco padrão
+    // Variáveis de resultado final
+    let finalWater = 0;
+    let finalLand = 0;
+    let finalPollution = 0;
+    let suggestionMessage = "";
+    
+    // Elementos do DOM
+    const dynamicDiv = document.getElementById("dynamicContent");
+    const mainTitle = document.getElementById("mainTitle");
+    let currentCanvas; // p5 canvas
+
+    // Acessibilidade variáveis
+    let isHighContrast = false;
+    
+    // ======================== p5.js visual ========================
+    function setup() {
+        let canvas = createCanvas(800, 300);
+        canvas.parent("p5canvas");
+        currentCanvas = canvas;
+        backgroundVisual(0); // estado inicial: verde neutro
+    }
+    
+    function draw() {
+        // O desenho é controlado por updateBackground conforme estado e impactos
+        // Mas mantemos aqui pra não conflitar: só chama funções personalizadas
+        if (gameState === "start") {
+            drawStartBackground();
+        } else if (gameState === "question") {
+            drawNeutral();
+        } else if (gameState === "result" || gameState === "finalAction") {
+            drawImpactBackground();
+        }
+    }
+    
+    function drawStartBackground() {
+        background(180, 220, 130);
+        fill(40, 70, 30);
+        textSize(20);
+        textAlign(CENTER, CENTER);
+        text("🌱 Seu futuro começa com uma escolha", width/2, height-40);
+        textSize(14);
+        fill(0);
+        text("Cada clique reflete o campo e a água", width/2, height-20);
+    }
+    
+    function drawNeutral() {
+        background(210, 230, 180);
+        fill(30);
+        textSize(16);
+        textAlign(CENTER, CENTER);
+        text("⚖️ Faça sua escolha...", width/2, height/2);
+    }
+    
+    function drawImpactBackground() {
+        // baseado nos scores para mudar visual: impacto alto = acinzentado, médio = amarelo seco, baixo = verde
+        let waterScore = finalWater;
+        let landScore = finalLand;
+        let intensity = (waterScore / 2500) + (landScore / 12);
+        if (intensity > 1) intensity = 1;
+        
+        if (intensity < 0.3) {
+            background(90, 150, 70);   // verde equilibrado
+            fill(255);
+            text("🌿 EQUILÍBRIO COM O AGRO", width/2, 40);
+        } else if (intensity < 0.6) {
+            background(190, 170, 80);   // amarelado, pressão moderada
+            fill(50);
+            text("🌾 IMPACTO MÉDIO - SOLO SOB PRESSÃO", width/2, 40);
+        } else {
+            background(110, 100, 90);   // cinza seco
+            fill(240);
+            text("🌫️ ALTO IMPACTO - RECURSOS ESGOTADOS", width/2, 40);
+        }
+        textAlign(CENTER);
+        textSize(14);
+        fill(0);
+        text("Clique no painel para ver dicas", width/2, height-20);
+    }
+    
+    function updateBackgroundFromTotals() {
+        redraw();
+    }
+    
+    function backgroundVisual(impactCode) {
+        // apenas placeholder
+        redraw();
+    }
+    
+    // =========== LÓGICA PRINCIPAL E INTERFACE ==========
+    function refreshUI() {
+        if (gameState === "start") {
+            dynamicDiv.innerHTML = `
+                <p style="font-size: 1.2rem;">🌍 O Impacto Invisível das Suas Escolhas</p>
+                <button class="choice-btn" id="startBtn">✨ Começar Jornada ✨</button>
+                <div class="impact-stats" style="margin-top: 20px;">
+                    💡 <strong>Você acha que suas escolhas não impactam o meio ambiente?</strong><br>
+                    Cada produto vem do agro: água, solo e poluição.<br>
+                    <span style="font-size:0.9rem;">Descubra sua pegada invisível.</span>
+                </div>
+            `;
+            document.getElementById("startBtn")?.addEventListener("click", () => {
+                resetGameAndStart();
+            });
+        } 
+        else if (gameState === "question") {
+            let q = questions[currentQuestionIndex];
+            let optionsHtml = "";
+            q.options.forEach((opt, idx) => {
+                optionsHtml += `<button class="choice-btn" data-opt-index="${idx}">${opt.label}</button>`;
+            });
+            dynamicDiv.innerHTML = `
+                <div class="question-text">${q.text}</div>
+                <div class="buttons-group" id="optionsGroup">
+                    ${optionsHtml}
+                </div>
+                <div style="font-size:0.9rem; margin-top:10px;"><strong>💧 Água acumulada:</strong> ${userChoices.water} L | 🌾 Solo: ${userChoices.land.toFixed(1)} | 🌍 Impacto: ${userChoices.pollution}</div>
+            `;
+            // adicionar eventos
+            q.options.forEach((opt, idx) => {
+                let btn = document.querySelector(`[data-opt-index="${idx}"]`);
+                if(btn) {
+                    btn.addEventListener("click", () => {
+                        // somar valores
+                        userChoices.water += opt.water;
+                        userChoices.land += opt.land;
+                        userChoices.pollution += opt.pollution;
+                        // Avançar ou finalizar perguntas
+                        if (currentQuestionIndex + 1 < questions.length) {
+                            currentQuestionIndex++;
+                            refreshUI();
+                        } else {
+                            // acabaram as perguntas: calcular resultado
+                            finalWater = userChoices.water;
+                            finalLand = userChoices.land;
+                            finalPollution = userChoices.pollution;
+                            gameState = "result";
+                            generateSuggestions();
+                            refreshUI();
+                        }
+                        updateBackgroundFromTotals();
+                    });
                 }
-            }
-
-            // --- GERENCIADOR DE TELAS ---
-            if (tela === 1) {
-                desenharTela1();
-            } else if (tela === 2) {
-                desenharTela2();
-            } else if (tela === 3) {
-                desenharTela3();
-            } else if (tela === 4) {
-                desenharTela4();
-            }
+            });
+        } 
+        else if (gameState === "result") {
+            // Exibe resultado visual + números
+            let waterEq = (finalWater / 150).toFixed(1);
+            let soloMsg = finalLand > 6 ? "alta pressão sobre pastagens/plantações" : "uso sustentável do solo";
+            dynamicDiv.innerHTML = `
+                <h2>🌍 SEU IMPACTO INVISÍVEL</h2>
+                <div class="impact-stats">
+                    💧 ÁGUA CONSUMIDA: <strong>${finalWater} litros</strong><br>
+                    🌾 USO DE SOLO (score agro): ${finalLand.toFixed(1)}<br>
+                    ⚠️ IMPACTO AMBIENTAL: ${finalPollution}<br>
+                    <hr>
+                    🔎 Equivalente a <strong>${waterEq} dias de água de uma família rural</strong>.<br>
+                    🧩 ${soloMsg}.
+                </div>
+                <p><strong>“Você não vive no campo… mas suas escolhas controlam o campo.”</strong></p>
+                <button class="choice-btn" id="seeSolutionsBtn">🌱 Ver soluções reais</button>
+                <button class="choice-btn reset-btn" id="resetBtnGame">🔄 Refazer escolhas</button>
+            `;
+            document.getElementById("seeSolutionsBtn")?.addEventListener("click", () => {
+                gameState = "finalAction";
+                refreshUI();
+            });
+            document.getElementById("resetBtnGame")?.addEventListener("click", () => {
+                fullReset();
+            });
+            updateBackgroundFromTotals();
         }
-
-        // --- TELAS DO SISTEMA ---
-
-        function desenharTela1() {
-            fill(altoContraste ? 255 : 40);
-            textSize(32);
-            text("De Onde Vem?", width / 2, 120);
-            textSize(20);
-            text("O Impacto Invisível das Suas Escolhas", width / 2, 170);
-            
-            textSize(16);
-            text("Você acha que suas escolhas urbanas não impactam o campo?", width / 2, 260);
-            
-            // Botão Começar simulado no Canvas
-            fill(altoContraste ? 255 : 46, altoContraste ? 0 : 204, altoContraste ? 0 : 113);
-            if(altoContraste) stroke(255);
-            rect(width / 2 - 100, 330, 200, 50, 5);
-            fill(altoContraste ? 0 : 255);
-            noStroke();
-            textSize(18);
-            text("CLIQUE PARA INICIAR", width / 2, 355);
+        else if (gameState === "finalAction") {
+            dynamicDiv.innerHTML = `
+                <h2>💡 AÇÕES CONSCIENTES (reais e possíveis)</h2>
+                <div class="action-suggest">
+                    ✨ ${suggestionMessage}<br><br>
+                    🚿 Reduza 2min no banho = economia de 60L/dia<br>
+                    🍽️ Evite desperdício de comida: menos pressão sobre o agro<br>
+                    🛒 Prefira produtos locais e roupas duráveis<br>
+                    🌳 Cada pequena escolha regenera o campo.
+                </div>
+                <div style="margin-top:20px;">
+                    <button class="choice-btn reset-btn" id="resetFinalBtn">🔁 Recomeçar simulação</button>
+                </div>
+                <p style="margin-top:15px;"><strong>👉 “Pequenas escolhas, grandes impactos.”</strong></p>
+            `;
+            document.getElementById("resetFinalBtn")?.addEventListener("click", () => {
+                fullReset();
+            });
+            updateBackgroundFromTotals();
         }
-
-        function desenharTela2() {
-            let q = perguntas[perguntaAtual];
-            
-            // Título da Categoria
-            fill(altoContraste ? 255 : 39, altoContraste ? 255 : 174, altoContraste ? 0 : 96);
-            textSize(24);
-            text(q.titulo, width / 2, 60);
-            
-            // Pergunta
-            fill(altoContraste ? 255 : 50);
-            textSize(18);
-            text(q.descricao, width / 2, 110);
-
-            // Desenhar as 3 opções de botões
-            for (let i = 0; i < q.opcoes.length; i++) {
-                let yPos = 180 + (i * 80);
-                
-                // Mudar cor ao passar o mouse por cima
-                if (mouseX > width/2 - 250 && mouseX < width/2 + 250 && mouseY > yPos && mouseY < yPos + 50) {
-                    fill(altoContraste ? 255 : 220);
-                } else {
-                    fill(altoContraste ? 0 : 245);
-                }
-                
-                stroke(altoContraste ? 255 : 180);
-                strokeWeight(2);
-                rect(width / 2 - 250, yPos, 500, 50, 5);
-                
-                noStroke();
-                fill(altoContraste ? 255 : 0);
-                textSize(16);
-                text(q.opcoes[i].texto, width / 2, yPos + 25);
-            }
+        
+        // Ajustar título conforme tema
+        if(gameState !== "start") mainTitle.innerText = "🌍 De Onde Vem? - Sua Pegada";
+        else mainTitle.innerText = "🌱 DE ONDE VEM?";
+    }
+    
+    function generateSuggestions() {
+        if(finalWater > 2000 || finalLand > 8) {
+            suggestionMessage = "Seu consumo é alto! Tente: reduzir banho, escolher alimentos vegetais localmente, comprar menos fast fashion. Isso aliviaria quase 40% do impacto no agro.";
+        } else if (finalWater > 1000) {
+            suggestionMessage = "Você tem impacto moderado. Que tal diminuir o tempo de tela e optar por produtos orgânicos?";
+        } else {
+            suggestionMessage = "Parabéns! Seu estilo de vida está alinhado com a sustentabilidade. Continue apoiando o consumo consciente e o agro familiar.";
         }
-
-        function desenharTela3() {
-            fill(altoContraste ? 255 : 20);
-            textSize(28);
-            text("O SEU IMPACTO INVISÍVEL", width / 2, 60);
-
-            textSize(18);
-            // Mensagem de impacto no agro com base nos resultados
-            text(`💧 Água Virtual Consumida: ${aguaTotal} Litros`, width / 2, 140);
-            text(`🌾 Área de Solo Pressionada: ${soloTotal} m²`, width / 2, 180);
-            
-            textSize(16);
-            let equivalenteDias = Math.round(aguaTotal / 150); // 150L é a média de uso diário de uma pessoa
-            text(`[Equivale a aproximadamente ${equivalenteDias} dias de água de uma pessoa]`, width / 2, 220);
-
-            // Frase de Efeito Crítico (Clique Mental)
-            stroke(altoContraste ? 255 : 0);
-            fill(altoContraste ? 0 : 255, altoContraste ? 0 : 240, altoContraste ? 0 : 240);
-            rect(50, 270, 700, 90, 8);
-            
-            noStroke();
-            fill(altoContraste ? 255 : 192, altoContraste ? 0 : 57, altoContraste ? 0 : 43);
-            textSize(18);
-            text("“Você não vive no campo... mas suas escolhas controlam o campo.”", width / 2, 315);
-
-            // Botão Avançar
-            fill(altoContraste ? 255 : 41, altoContraste ? 0 : 128, altoContraste ? 0 : 185);
-            rect(width / 2 - 100, 400, 200, 45, 5);
-            fill(altoContraste ? 0 : 255);
-            text("Como mudar isso?", width / 2, 422);
+    }
+    
+    function resetGameAndStart() {
+        userChoices = { water: 0, land: 0, pollution: 0 };
+        currentQuestionIndex = 0;
+        finalWater = 0;
+        finalLand = 0;
+        finalPollution = 0;
+        gameState = "question";
+        refreshUI();
+        updateBackgroundFromTotals();
+    }
+    
+    function fullReset() {
+        userChoices = { water: 0, land: 0, pollution: 0 };
+        currentQuestionIndex = 0;
+        finalWater = 0;
+        finalLand = 0;
+        finalPollution = 0;
+        gameState = "start";
+        refreshUI();
+        updateBackgroundFromTotals();
+        mainTitle.innerText = "🌱 DE ONDE VEM?";
+    }
+    
+    // ========== ACESSIBILIDADE ==========
+    function setDarkMode() {
+        document.body.classList.remove("light-mode");
+        document.body.classList.add("dark-mode");
+    }
+    function setLightMode() {
+        document.body.classList.remove("dark-mode");
+        document.body.classList.add("light-mode");
+    }
+    function toggleHighContrast() {
+        if(isHighContrast) {
+            document.body.classList.remove("high-contrast");
+            isHighContrast = false;
+        } else {
+            document.body.classList.add("high-contrast");
+            isHighContrast = true;
         }
-
-        function desenharTela4() {
-            fill(altoContraste ? 255 : 40);
-            textSize(26);
-            text("Caminhos para o Consumo Consciente", width / 2, 50);
-
-            textSize(16);
-            let dicas = [
-                "• Reduza o tempo de banho em 2 minutos (Economiza até 24L).",
-                "• Evite o desperdício de alimentos (A pecuária e a agricultura usam muita água).",
-                "• Apoie produtores locais e agroecológicos sempre que possível.",
-                "• Compre roupas por necessidade e dê preferência a marcas duráveis."
-            ];
-
-            for(let i=0; i<dicas.length; i++){
-                text(dicas[i], width / 2, 120 + (i * 45));
-            }
-
-            // Frase de encerramento do Projeto para os Jurados
-            textSize(15);
-            fill(altoContraste ? 255 : 100);
-            text("A proposta evidencia a conexão invisível entre consumo urbano e produção agropecuária.", width/2, 330);
-
-            // Botão Reiniciar
-            stroke(altoContraste ? 255 : 0);
-            fill(altoContraste ? 255 : 39, altoContraste ? 0 : 174, altoContraste ? 0 : 96);
-            rect(width / 2 - 110, 400, 220, 50, 5);
-            noStroke();
-            fill(altoContraste ? 0 : 255);
-            textSize(16);
-            text("Refazer Escolhas 🔄", width / 2, 425);
-        }
-
-        // --- INTERAÇÃO DO MOUSE (CLIQUES) ---
-        function mousePressed() {
-            // Lógica de cliques para avançar telas
-            if (tela === 1) {
-                // Clique no botão começar
-                if (mouseX > width / 2 - 100 && mouseX < width / 2 + 100 && mouseY > 330 && mouseY < 380) {
-                    avancarParaEscolhas();
-                }
-            } 
-            else if (tela === 2) {
-                // Verificar qual opção foi clicada nas perguntas
-                for (let i = 0; i < 3; i++) {
-                    let yPos = 180 + (i * 80);
-                    if (mouseX > width/2 - 250 && mouseX < width/2 + 250 && mouseY > yPos && mouseY < yPos + 50) {
-                        computarEscolha(i);
-                    }
-                }
-            } 
-            else if (tela === 3) {
-                // Avançar da tela de resultados para a de dicas
-                if (mouseX > width / 2 - 100 && mouseX < width / 2 + 100 && mouseY > 400 && mouseY < 445) {
-                    tela = 4;
-                    atualizarLeitorDeTela("Tela 4: Consciência e Ação. Apresentando dicas práticas de consumo e encerramento. Botão no rodapé para refazer escolhas.");
-                }
-            } 
-            else if (tela === 4) {
-                // Reiniciar o jogo
-                if (mouseX > width / 2 - 110 && mouseX < width / 2 + 110 && mouseY > 400 && mouseY < 450) {
-                    reiniciarJogo();
-                }
-            }
-        }
-
-        // --- LÓGICA DO NEGÓCIO ---
-        function avancarParaEscolhas() {
-            tela = 2;
-            perguntaAtual = 0;
-            aguaTotal = 0;
-            soloTotal = 0;
-            poluicaoTotal = 0;
-            anunciarPergunta();
-        }
-
-        function computarEscolha(indiceOpcao) {
-            let dadosOpcao = perguntas[perguntaAtual].opcoes[indiceOpcao];
-            aguaTotal += dadosOpcao.agua;
-            soloTotal += dadosOpcao.solo;
-            poluicaoTotal += dadosOpcao.poluicao;
-
-            // Avança para próxima pergunta ou vai para o resultado
-            perguntaAtual++;
-            if (perguntaAtual < perguntas.length) {
-                anunciarPergunta();
-            } else {
-                tela = 3;
-                atualizarLeitorDeTela(`Tela de Resultados. Seu consumo total de água virtual foi de ${aguaTotal} litros. Uso de solo de ${soloTotal} metros quadrados. Pressione o botão na parte inferior para ver dicas de ação.`);
-            }
-        }
-
-        function reiniciarJogo() {
-            tela = 1;
-            atualizarLeitorDeTela("Jogo reiniciado. Tela Inicial ativa.");
-        }
-
-        // --- ACESSIBILIDADE ---
-
-        // Função 1: Alternar Fundo Claro / Fundo Preto (Alto Contraste)
-        function alternarContraste() {
-            altoContraste = !altoContraste;
-            if (altoContraste) {
-                document.body.classList.add('alto-contraste');
-            } else {
-                document.body.classList.remove('alto-contraste');
-            }
-        }
-
-        // Função 2: Atualização invisível para Leitores de Tela (Deficientes Visuais)
-        function atualizarLeitorDeTela(texto) {
-            document.getElementById('leitor-tela').innerText = texto;
-        }
-
-        function anunciarPergunta() {
-            let q = perguntas[perguntaAtual];
-            atualizarLeitorDeTela(`Pergunta sobre ${q.titulo}: ${q.descricao}. Opção 1: ${q.opcoes[0].texto}. Opção 2: ${q.opcoes[1].texto}. Opção 3: ${q.opcoes[2].texto}.`);
-        }
-
-        // Função 3: Síntese de Voz Nativa (Acessibilidade Auditiva/Visual ativa)
-        function falarTextoAtual() {
-            let textoParaFalar = "";
-
-            if (tela === 1) {
-                textoParaFalar = "De onde vem? O impacto invisível das suas escolhas. Você acha que suas escolhas não impactam o meio ambiente? Clique no centro da tela para iniciar.";
-            } else if (tela === 2) {
-                let q = perguntas[perguntaAtual];
-                textoParaFalar = `${q.titulo}. ${q.descricao}. Opções disponíveis: 1: ${q.opcoes[0].texto}. 2: ${q.opcoes[1].texto}. 3: ${q.opcoes[2].texto}.`;
-            } else if (tela === 3) {
-                textoParaFalar = `Resultados do seu impacto. Você consumiu aproximadamente ${aguaTotal} litros de água virtual e utilizou ${soloTotal} metros quadrados de solo. Lembre-se: Você não vive no campo, mas suas escolhas controlam o campo.`;
-            } else if (tela === 4) {
-                textoParaFalar = "Caminhos para o Consumo Consciente. Reduza o banho, evite o desperdício de comida e apoie o produtor local. Pequenas escolhas, grandes impactos.";
-            }
-
-            // Executa a voz do navegador
-            if ('speechSynthesis' in window) {
-                window.speechSynthesis.cancel(); // Para qualquer fala anterior
-                let utterance = new SpeechSynthesisUtterance(textoParaFalar);
-                utterance.lang = 'pt-BR';
-                window.speechSynthesis.speak(utterance);
-            } else {
-                alert("A síntese de voz não é suportada no seu navegador.");
-            }
-        }
-    </script>
+    }
+    // Dica libras: alerta visual legenda e descrição textual mais robusta
+    function showLibraHint() {
+        alert("🤟 LIBRAS - Dica visual: A cada escolha, observe a mudança de cor no canvas (verde = baixo impacto, amarelo = médio, cinza = alto). As descrições textuais estão em português. Este projeto incentiva consumo consciente e conexão com o agro.");
+        // adicional: criar um elemento flutuante temporário
+        let hintDiv = document.createElement("div");
+        hintDiv.innerText = "♿ Acessibilidade: As opções são narradas por cores e textos. Use contraste e modo noturno para melhor leitura.";
+        hintDiv.style.position = "fixed"; hintDiv.style.bottom = "10px"; hintDiv.style.left = "10px";
+        hintDiv.style.background = "#000"; hintDiv.style.color = "#ff0"; hintDiv.style.padding = "8px";
+        hintDiv.style.borderRadius = "8px"; hintDiv.style.zIndex = "999";
+        document.body.appendChild(hintDiv);
+        setTimeout(() => hintDiv.remove(), 4000);
+    }
+    
+    // Event listeners acessibilidade
+    document.getElementById("darkModeBtn").addEventListener("click", setDarkMode);
+    document.getElementById("lightModeBtn").addEventListener("click", setLightMode);
+    document.getElementById("highContrastBtn").addEventListener("click", toggleHighContrast);
+    document.getElementById("libraBtn").addEventListener("click", showLibraHint);
+    
+    // iniciar UI
+    refreshUI();
+    
+    // função extra para redesenhar no p5 de acordo com o estado final
+    window.updateBackgroundFromTotals = updateBackgroundFromTotals;
+    
+    // Ajuste tamanho canvas responsivo
+    function windowResized() {
+        resizeCanvas(800, 300);
+    }
+    window.addEventListener("resize", windowResized);
+    
+</script>
 </body>
 </html>
