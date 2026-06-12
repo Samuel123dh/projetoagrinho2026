@@ -1,0 +1,309 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+}
+
+.container {
+    max-width: 800px;
+    width: 100%;
+    background: white;
+    border-radius: 30px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+    overflow: hidden;
+    min-height: 600px;
+}
+
+.tela {
+    display: none;
+    padding: 40px;
+    animation: fadeIn 0.5s ease;
+}
+
+.tela.ativa {
+    display: block;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* TELA 1 */
+.logo {
+    font-size: 80px;
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+h1 {
+    text-align: center;
+    color: #2d5016;
+    font-size: 2.5em;
+    margin-bottom: 10px;
+}
+
+h2 {
+    text-align: center;
+    color: #4a7c2b;
+    font-size: 1.3em;
+    margin-bottom: 30px;
+}
+
+.frase-impacto {
+    background: #f0f7e8;
+    padding: 20px;
+    border-radius: 15px;
+    text-align: center;
+    font-size: 1.2em;
+    color: #2d5016;
+    margin: 30px 0;
+    font-style: italic;
+    border-left: 4px solid #4a7c2b;
+}
+
+.btn-iniciar {
+    background: #4a7c2b;
+    color: white;
+    border: none;
+    padding: 15px 40px;
+    font-size: 1.1em;
+    border-radius: 50px;
+    cursor: pointer;
+    display: block;
+    margin: 20px auto;
+    transition: transform 0.3s;
+}
+
+.btn-iniciar:hover {
+    transform: scale(1.05);
+    background: #2d5016;
+}
+
+.legenda {
+    text-align: center;
+    color: #666;
+    font-size: 0.9em;
+    margin-top: 20px;
+}
+
+/* TELA 2 */
+.progresso {
+    background: #e0e0e0;
+    padding: 10px;
+    border-radius: 10px;
+    text-align: center;
+    margin-bottom: 30px;
+    font-weight: bold;
+    color: #2d5016;
+}
+
+#perguntaTexto {
+    font-size: 1.5em;
+    color: #333;
+    margin-bottom: 30px;
+    text-align: center;
+}
+
+.opcoes {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.opcao-btn {
+    background: #f0f7e8;
+    border: 2px solid #4a7c2b;
+    padding: 15px;
+    border-radius: 12px;
+    cursor: pointer;
+    font-size: 1em;
+    transition: all 0.3s;
+    text-align: center;
+}
+
+.opcao-btn:hover {
+    background: #4a7c2b;
+    color: white;
+    transform: translateX(10px);
+}
+
+/* TELA 3 */
+.resultado-visual {
+    width: 100%;
+    height: 150px;
+    border-radius: 15px;
+    margin: 20px 0;
+    transition: background 0.5s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 3em;
+}
+
+.resultado-visual.verde {
+    background: linear-gradient(135deg, #85d185, #4caf50);
+}
+
+.resultado-visual.amarelo {
+    background: linear-gradient(135deg, #ffd966, #f4a460);
+}
+
+.resultado-visual.cinza {
+    background: linear-gradient(135deg, #999, #666);
+}
+
+.metricas {
+    display: flex;
+    justify-content: space-around;
+    margin: 30px 0;
+    flex-wrap: wrap;
+    gap: 15px;
+}
+
+.metrica {
+    background: #f0f7e8;
+    padding: 15px;
+    border-radius: 12px;
+    text-align: center;
+    flex: 1;
+    min-width: 120px;
+}
+
+.metrica .icone {
+    font-size: 2em;
+    display: block;
+    margin-bottom: 5px;
+}
+
+.metrica span {
+    font-size: 1.5em;
+    font-weight: bold;
+    color: #2d5016;
+}
+
+.mensagem-impacto {
+    background: #fff3e0;
+    padding: 20px;
+    border-radius: 12px;
+    margin: 20px 0;
+    text-align: center;
+    font-weight: bold;
+}
+
+.btn-proximo {
+    background: #4a7c2b;
+    color: white;
+    border: none;
+    padding: 12px 30px;
+    border-radius: 50px;
+    cursor: pointer;
+    width: 100%;
+    font-size: 1em;
+}
+
+/* TELA 4 */
+.dicas-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 15px;
+    margin: 30px 0;
+}
+
+.dica {
+    background: #f0f7e8;
+    padding: 15px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    transition: transform 0.3s;
+}
+
+.dica:hover {
+    transform: translateY(-5px);
+}
+
+.dica-icone {
+    font-size: 2em;
+}
+
+.dica small {
+    display: block;
+    color: #666;
+    font-size: 0.8em;
+    margin-top: 5px;
+}
+
+.frase-final {
+    text-align: center;
+    font-size: 1.3em;
+    color: #2d5016;
+    margin: 30px 0;
+    padding: 20px;
+    background: linear-gradient(135deg, #f0f7e8, #e0e0e0);
+    border-radius: 15px;
+    font-weight: bold;
+}
+
+.botoes-final {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+}
+
+.btn-refazer {
+    background: #ff9800;
+    color: white;
+    border: none;
+    padding: 12px 30px;
+    border-radius: 50px;
+    cursor: pointer;
+    font-size: 1em;
+}
+
+.btn-refazer:hover {
+    background: #f57c00;
+}
+
+.subtexto {
+    text-align: center;
+    margin-top: 20px;
+    color: #666;
+    font-style: italic;
+}
+
+/* Responsivo */
+@media (max-width: 600px) {
+    .tela {
+        padding: 20px;
+    }
+    
+    h1 {
+        font-size: 1.8em;
+    }
+    
+    .metricas {
+        flex-direction: column;
+    }
+    
+    .dicas-container {
+        grid-template-columns: 1fr;
+    }
+}

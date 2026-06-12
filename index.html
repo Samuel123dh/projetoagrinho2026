@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>De Onde Vem? - Impacto Invisível das Escolhas</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container" id="app">
+        <!-- TELA 1 - INÍCIO -->
+        <div id="tela1" class="tela ativa">
+            <div class="logo">🌱</div>
+            <h1>DE ONDE VEM?</h1>
+            <h2>🌍 O Impacto Invisível das Suas Escolhas</h2>
+            <div class="frase-impacto">
+                "Você acha que suas escolhas não impactam o meio ambiente?"
+            </div>
+            <button class="btn-iniciar" onclick="proximaTela()">Começar</button>
+            <div class="legenda">
+                Cada produto vem do agro: água, solo e poluição.
+            </div>
+        </div>
+
+        <!-- TELA 2 - PERGUNTAS -->
+        <div id="tela2" class="tela">
+            <div class="progresso">
+                Pergunta <span id="perguntaAtual">1</span> de <span id="totalPerguntas">5</span>
+            </div>
+            <div id="perguntaContainer">
+                <h3 id="perguntaTexto"></h3>
+                <div id="opcoesContainer" class="opcoes"></div>
+            </div>
+        </div>
+
+        <!-- TELA 3 - RESULTADO -->
+        <div id="tela3" class="tela">
+            <h2>📊 SEU IMPACTO AMBIENTAL</h2>
+            <div id="resultadoVisual" class="resultado-visual"></div>
+            <div class="metricas">
+                <div class="metrica">
+                    <span class="icone">💧</span>
+                    <span id="aguaTotal">0</span> litros de água
+                </div>
+                <div class="metrica">
+                    <span class="icone">🌾</span>
+                    <span id="soloTotal">0</span> m² de solo usado
+                </div>
+                <div class="metrica">
+                    <span class="icone">🌍</span>
+                    <span id="impactoTotal">0</span> pontos de impacto
+                </div>
+            </div>
+            <div id="mensagemImpacto" class="mensagem-impacto"></div>
+            <button class="btn-proximo" onclick="irParaTela4()">Ver como melhorar →</button>
+        </div>
+
+        <!-- TELA 4 - CONSCIÊNCIA E AÇÃO -->
+        <div id="tela4" class="tela">
+            <h2>💚 SUAS ESCOLHAS, SEU FUTURO</h2>
+            <div class="dicas-container">
+                <div class="dica">
+                    <span class="dica-icone">🚿</span>
+                    <div>Reduza o banho para 5 minutos<br><small>Economiza até 60L de água</small></div>
+                </div>
+                <div class="dica">
+                    <span class="dica-icone">🍽️</span>
+                    <div>Evite desperdício de comida<br><small>Menos pressão sobre o solo</small></div>
+                </div>
+                <div class="dica">
+                    <span class="dica-icone">🛒</span>
+                    <div>Consuma produtos locais<br><small>Reduz pegada de carbono</small></div>
+                </div>
+                <div class="dica">
+                    <span class="dica-icone">👕</span>
+                    <div>Compre roupas duráveis<br><small>Menos lixo industrial</small></div>
+                </div>
+            </div>
+            <div class="frase-final">
+                🌱 "Você não vive no campo...<br>mas suas escolhas controlam o campo." 🌱
+            </div>
+            <div class="botoes-final">
+                <button class="btn-refazer" onclick="refazerEscolhas()">🔄 Refazer escolhas</button>
+            </div>
+            <div class="subtexto">
+                Pequenas escolhas, grandes impactos.
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
